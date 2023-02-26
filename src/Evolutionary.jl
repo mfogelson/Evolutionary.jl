@@ -1,5 +1,5 @@
 module Evolutionary
-    using LinearAlgebra, Statistics
+    using LinearAlgebra, Statistics, Distributed
     using Base: @kwdef
     using UnPack: @unpack
     using StackViews

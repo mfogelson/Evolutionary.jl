@@ -55,7 +55,7 @@ function initial_state(method::GA, options, objfun, population)
     eliteSize = isa(method.ɛ, Int) ? method.ɛ : round(Int, method.ɛ * method.populationSize)
 
     # Evaluate population fitness
-    fitness = map(i -> value(objfun, i), population)
+    fitness = pmap(i -> value(objfun, i), population)
     minfit, fitidx = findmin(fitness)
 
     # setup initial state

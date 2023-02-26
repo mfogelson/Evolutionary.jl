@@ -123,6 +123,7 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
         stopped_by_time_limit = _time-t0 > options.time_limit
 
         if stopped_by_callback || stopped_by_time_limit
+            converged = stopped_by_callback
             stopped = true
         end
     end

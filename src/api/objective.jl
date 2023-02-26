@@ -48,11 +48,15 @@ Return `true` if the function is multi-objective objective.
 ismultiobjective(obj) = obj.F isa AbstractArray
 
 function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX,TP}
+    # println("value 8th last")
+
     obj.f_calls += 1
     obj.f(x)::TF
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX,TP}
+    # println("value 7th last")
+
     obj.F = value(obj, x)
     obj.F
 end
@@ -63,12 +67,17 @@ function value!!(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX
 end
 
 function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, F, x::TX) where {TC,TF,TX,TP}
+    # println("value 6th last")
+
     obj.f_calls += 1
     obj.f(F, x)
+    
 end
 value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF<:AbstractArray,TX,TP} = value(obj, copy(obj.F), x)
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,TP}, F, x::TX) where {TC,TF,TX,TP}
+    # println("value 5th last")
+
     obj.F = value(obj, F, x)
 end
 
@@ -79,35 +88,44 @@ end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}},
                 F::AbstractVector, xs::AbstractVector{TX}) where {TC,TF<:Real,TX}
+    # println("value 4th last")
+
     broadcast!(x->value(obj,x), F, xs)
     F
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:thread}},
                 F::AbstractVector, xs::AbstractVector{TX}) where {TC,TF<:Real,TX}
+    # # println("value 3rd last")
+
     n = length(xs)
-    Threads.@threads for i in 1:n
-        F[i] = value(obj, xs[i])
-    end
+    obj.f_calls += n
+    # Threads.@threads for i in 1:n
+    F[1:n] = pmap(x -> value(obj, x), xs)
+    # end
     F
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}},
                 F::AbstractMatrix, xs::AbstractVector{TX}) where {TC,TF,TX}
+    # println("value 2nd last")
+
     n = length(xs)
-    for i in 1:n
-        fv = view(F, :, i)
-        value(obj, fv, xs[i])
-    end
+    # for i in 1:n
+    #     fv = view(F, :, i)
+    #     value(obj, fv, xs[i])
+    # end
+    F[1:n] = pmap(x->value(obj, x), xs)
     F
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:thread}},
                 F::AbstractMatrix, xs::AbstractVector{TX}) where {TC,TF,TX}
+    # println("value last")
     n = length(xs)
-    @Threads.threads for i in 1:n
-        fv = view(F, :, i)
-        value(obj, fv, xs[i])
-    end
+    # @Threads.threads for i in 1:n
+        # fv = view(F, :, i)
+    F[1:n] = pmap(x->value(obj, x), xs)
+    # end
     F
 end
